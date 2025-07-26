@@ -853,10 +853,6 @@ void sensor_loop(void)
 					LOG_WRN("No packets in buffer");
 					noPacketsInBufferCheck++;
 				}
-				if (noPacketsInBufferCheck > 5) {
-					sensor_request_scan(true);
-					noPacketsInBufferCheck = 0;
-				}
 				if (++packet_errors == 10)
 				{
 					LOG_ERR("Packet error threshold exceeded");
@@ -1064,6 +1060,10 @@ void sensor_loop(void)
 			k_thread_suspend(&sensor_thread_id);
 
 		main_running = true;
+		if (noPacketsInBufferCheck > 10) {
+			sensor_request_scan(true);
+			noPacketsInBufferCheck = 0;
+		}
 	}
 }
 
