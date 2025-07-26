@@ -134,6 +134,7 @@ static int sensor_scan(void);
 static int sensor_init(void);
 static void sensor_loop(void);
 static struct k_thread sensor_thread_id;
+static struct k_thread sensor_request_scan_thread_id;
 static K_THREAD_STACK_DEFINE(sensor_thread_id_stack, 1024);
 
 K_THREAD_DEFINE(sensor_init_thread_id, 256, sensor_request_scan, true, NULL, NULL, 7, 0, 0);
@@ -1061,10 +1062,26 @@ void sensor_loop(void)
 
 		main_running = true;
 		if (noPacketsInBufferCheck > 10) {
-			sensor_request_scan(true);
 			noPacketsInBufferCheck = 0;
+			k_thread_create(
+				&sensor_request_scan_thread_id,
+				sensor_thread_id_stack,
+				K_THREAD_STACK_SIZEOF(sensor_thread_id_stack),
+				(k_thread_entry_t)force_scan_from_sensor_thread,
+				NULL,
+				NULL,
+				NULL,
+				7,
+				0,
+				K_NO_WAIT
+			);
 		}
 	}
+}
+
+void force_scan_from_sensor_thread(void) {
+		sensor_request_scan(true);
+	    k_thread_abort(&sensor_request_scan_thread_id);
 }
 
 void wait_for_threads(void) // TODO: add timeout

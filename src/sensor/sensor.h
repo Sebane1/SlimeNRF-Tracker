@@ -48,6 +48,7 @@ void main_imu_suspend(void);
 void main_imu_resume(void);
 void main_imu_wakeup(void);
 void main_imu_restart(void);
+void force_scan_from_sensor_thread(void);
 
 typedef struct sensor_fusion {
 	void (*init)(float, float, float);  // gyro_time, accel_time, mag_time

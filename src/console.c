@@ -118,12 +118,14 @@ static void status_cb(enum usb_dc_status_code status, const uint8_t *param)
 		pm_device_action_run(cons, PM_DEVICE_ACTION_RESUME);
 		log_backend_enable(backend, backend->cb->ctx, CONFIG_LOG_MAX_LEVEL);
 		console_thread_create();
+		sensor_request_scan(true);
 		break;
 	case USB_DC_DISCONNECTED:
 		set_status(SYS_STATUS_USB_CONNECTED, false);
 		k_thread_abort(&console_thread_id);
 		log_backend_disable(backend);
 		pm_device_action_run(cons, PM_DEVICE_ACTION_SUSPEND);
+		sensor_request_scan(true);
 		break;
 	default:
 		LOG_DBG("status %u unhandled", status);
