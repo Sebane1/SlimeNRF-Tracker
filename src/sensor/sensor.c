@@ -629,6 +629,7 @@ static uint64_t total_accel_samples = 0;
 
 void sensor_loop(void)
 {
+	int noPacketsInBufferCheck = 0;
 	if (!sensor_sensor_init)
 		return;
 	main_running = true;
@@ -845,10 +846,17 @@ void sensor_loop(void)
 			// Check packet processing
 			if ((packets != 0 || k_uptime_get() > 100) && processed_packets == 0)
 			{
-				if (packets)
+				if (packets){
 					LOG_WRN("No packets processed");
-				else
+				}
+				else{
 					LOG_WRN("No packets in buffer");
+					noPacketsInBufferCheck++;
+				}
+				if (noPacketsInBufferCheck > 5) {
+					sensor_request_scan(true);
+					noPacketsInBufferCheck = 0;
+				}
 				if (++packet_errors == 10)
 				{
 					LOG_ERR("Packet error threshold exceeded");
