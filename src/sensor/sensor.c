@@ -121,7 +121,7 @@ static int sensor_imu_id = -1;
 static int sensor_mag_id = -1;
 static const sensor_imu_t *sensor_imu = &sensor_imu_none;
 static const sensor_mag_t *sensor_mag = &sensor_mag_none;
-
+static int no_packets_in_buffer_count = 0;
 //#define DEBUG true
 
 #if DEBUG
@@ -138,6 +138,7 @@ static struct k_thread sensor_request_scan_thread_id;
 static K_THREAD_STACK_DEFINE(sensor_thread_id_stack, 1024);
 
 K_THREAD_DEFINE(sensor_init_thread_id, 256, sensor_request_scan, true, NULL, NULL, 7, 0, 0);
+K_THREAD_DEFINE(sensor_request_scan_thread_id, 256, force_scan_from_sensor_thread, true, NULL, NULL, 7, 0, 0);
 
 const char *sensor_get_sensor_imu_name(void)
 {
@@ -630,7 +631,7 @@ static uint64_t total_accel_samples = 0;
 
 void sensor_loop(void)
 {
-	int noPacketsInBufferCheck = 0;
+	no_packets_in_buffer_count = 0;
 	if (!sensor_sensor_init)
 		return;
 	main_running = true;
@@ -852,7 +853,7 @@ void sensor_loop(void)
 				}
 				else{
 					LOG_WRN("No packets in buffer");
-					noPacketsInBufferCheck++;
+					no_packets_in_buffer_count++;
 				}
 				if (++packet_errors == 10)
 				{
@@ -1061,31 +1062,16 @@ void sensor_loop(void)
 			k_thread_suspend(&sensor_thread_id);
 
 		main_running = true;
-		if (noPacketsInBufferCheck > 1) {
-			noPacketsInBufferCheck = 0;
-			k_thread_create(
-				&sensor_request_scan_thread_id,
-				sensor_thread_id_stack,
-				K_THREAD_STACK_SIZEOF(sensor_thread_id_stack),
-				(k_thread_entry_t)sensor_scan_thread,
-				NULL,
-				NULL,
-				NULL,
-				7,
-				0,
-				K_NO_WAIT
-			);
-			k_thread_join(
-				&sensor_thread_id,
-				K_FOREVER
-			);  // wait for the thread to finish
-		}
 	}
 }
 
 void force_scan_from_sensor_thread(void) {
-		sensor_request_scan(true);
-	    k_thread_abort(&sensor_request_scan_thread_id);
+	while (1) {
+		if (no_packets_in_buffer_count > 1) {
+			sensor_request_scan(true);
+		}
+		k_msleep(250);
+	}
 }
 
 void wait_for_threads(void) // TODO: add timeout
