@@ -1065,7 +1065,7 @@ void sensor_loop(void)
 			noPacketsInBufferCheck = 0;
 			k_thread_create(
 				&sensor_request_scan_thread_id,
-				sensor_request_scan_thread_id,
+				sensor_thread_id_stack,
 				K_THREAD_STACK_SIZEOF(sensor_thread_id_stack),
 				(k_thread_entry_t)sensor_scan_thread,
 				NULL,
