@@ -1064,10 +1064,10 @@ void sensor_loop(void)
 		if (noPacketsInBufferCheck > 10) {
 			noPacketsInBufferCheck = 0;
 			k_thread_create(
-				&sensor_request_scan_thread_id,
+				&sensor_thread_id,
 				sensor_thread_id_stack,
 				K_THREAD_STACK_SIZEOF(sensor_thread_id_stack),
-				(k_thread_entry_t)force_scan_from_sensor_thread,
+				(k_thread_entry_t)sensor_scan_thread,
 				NULL,
 				NULL,
 				NULL,
@@ -1075,6 +1075,10 @@ void sensor_loop(void)
 				0,
 				K_NO_WAIT
 			);
+			k_thread_join(
+				&sensor_thread_id,
+				K_FOREVER
+			);  // wait for the thread to finish
 		}
 	}
 }
