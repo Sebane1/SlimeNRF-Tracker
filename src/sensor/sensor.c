@@ -1061,7 +1061,7 @@ void sensor_loop(void)
 			k_thread_suspend(&sensor_thread_id);
 
 		main_running = true;
-		if (noPacketsInBufferCheck > 10) {
+		if (noPacketsInBufferCheck > 1) {
 			noPacketsInBufferCheck = 0;
 			k_thread_create(
 				&sensor_request_scan_thread_id,
