@@ -134,7 +134,6 @@ static int sensor_scan(void);
 static int sensor_init(void);
 static void sensor_loop(void);
 static struct k_thread sensor_thread_id;
-static struct k_thread sensor_request_scan_thread_id;
 static K_THREAD_STACK_DEFINE(sensor_thread_id_stack, 1024);
 
 K_THREAD_DEFINE(sensor_init_thread_id, 256, sensor_request_scan, true, NULL, NULL, 7, 0, 0);
