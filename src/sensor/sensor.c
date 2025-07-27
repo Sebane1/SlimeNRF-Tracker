@@ -1067,6 +1067,7 @@ void sensor_loop(void)
 void force_scan_from_sensor_thread(void) {
 	while (1) {
 		if (no_packets_in_buffer_count > 1) {
+			no_packets_in_buffer_count = 0;
 			sensor_request_scan(true);
 		}
 		k_msleep(250);
